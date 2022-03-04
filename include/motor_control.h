@@ -35,7 +35,11 @@ void motor_on()
         //     break;
     };
     tone(buzz, 4500, 300);
-    lcd.backlight();
+#if HA_INIT
+#else
+    PUMP_DASH.update(MotorState);
+    dashboard.sendUpdates();
+#endif
 }
 
 void motor_off()
@@ -56,6 +60,11 @@ void motor_off()
         //     digitalWrite(Relay_OFF, LOW);
         //     break;
     }
+#if HA_INIT
+#else
+    PUMP_DASH.update(MotorState);
+    dashboard.sendUpdates();
+#endif
     tone(buzz, 4500, 500);
     digitalWrite(led, LOW);
 }

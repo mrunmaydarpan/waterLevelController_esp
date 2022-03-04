@@ -75,10 +75,9 @@
 
     <body>
         <div>
-            <form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input
-                    type='submit' value='Update'></form>
+            <form action="/update"> <input type='submit' value='Update'>
+            </form>
         </div>
-
     </body>
 
 

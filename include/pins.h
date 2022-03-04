@@ -14,6 +14,6 @@
 #define sensorRX 14
 #define sensorTX 12
 #elif SENSOR_3
-#define TRIGGER_PIN 12 
-#define PWM_OUTPUT_PIN 14
+#define TRIGGER_PIN 14
+#define PWM_OUTPUT_PIN 12
 #endif

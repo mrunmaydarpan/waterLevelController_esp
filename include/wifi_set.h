@@ -31,12 +31,15 @@ String processor(const String &var)
     }
     return String();
 }
+void WIFI_CONNECT()
+{
+}
 
 void setting_code()
 {
-    server.onNotFound([](AsyncWebServerRequest *request)
-                      { request->send_P(200, "text/html", index_html, processor); });
-    server.on("settings/", HTTP_GET, [](AsyncWebServerRequest *request)
+    // server.onNotFound([](AsyncWebServerRequest *request)
+    //                   { request->send_P(200, "text/html", index_html, processor); });
+    server.on("/setting", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                   debugln("setting pages");
                   request->send_P(200, "text/html", index_html, processor); });

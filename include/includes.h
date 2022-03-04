@@ -14,8 +14,12 @@
 #include <ESPAsyncWebServer.h>
 #include <ESPAsyncTCP.h>
 #include <AsyncElegantOTA.h>
+#if HA_INIT
+#include <ArduinoHA.h>
+#else
+#include <ESPDash.h>
+#endif
 #include <DNSServer.h>
-// #include <ArduinoHA.h>
 #include <JC_Button.h>
 #include <EEPROM.h>
 #include <LiquidCrystal_I2C.h>
@@ -39,5 +43,9 @@ Button modeButton(_Mode);
 Timer t;
 Smoothed<uint8_t> mySensor;
 AsyncWebServer server(80);
+#if HA_INIT
+#else
+ESPDash dashboard(&server);
+#endif
 DNSServer dns;
 WiFiClient client;

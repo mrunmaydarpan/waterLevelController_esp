@@ -67,10 +67,20 @@ void buttonEvent()
     if (modeButton.wasPressed() && ManualOff == false)
     {
         AutoMode = true;
+#if HA_INIT
+#else
+        MODE_DASH.update(AutoMode);
+        dashboard.sendUpdates();
+#endif
     }
     else if (modeButton.wasReleased())
     {
         AutoMode = false;
+#if HA_INIT
+#else
+        MODE_DASH.update(AutoMode);
+        dashboard.sendUpdates();
+#endif
     }
 }
 

@@ -5,10 +5,11 @@ const char brand[] = "MDtronix";
 
 /*------------function setting-----------------*/
 // #define SENSOR_1 true // sonar
-#define SENSOR_2 true // UART
-// #define SENSOR_3 true // PWM
+// #define SENSOR_2 true // UART
+#define SENSOR_3 true // PWM
 /*---------------------------------------------*/
 
+#define HA_INIT false
 #define DryRun false
 #define debugData true
 #define Buzzer true

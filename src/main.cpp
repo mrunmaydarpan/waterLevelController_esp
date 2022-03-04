@@ -66,6 +66,12 @@ byte network_icon[] = {
     0x1A,
     0x0A,
     0x00};
+#if HA_INIT
+#else
+Card LEVEL_DASH(&dashboard, HUMIDITY_CARD, "Level", "%", 0, 100);
+Card MODE_DASH(&dashboard, BUTTON_CARD, "Mode");
+Card PUMP_DASH(&dashboard, BUTTON_CARD, "Pump");
+#endif
 
 #include <headers.h>
 
@@ -122,10 +128,32 @@ void setup()
 
   mySensor.begin(SMOOTHED_AVERAGE, 50);
   // mySensor.clear();
+  WIFI_CONNECT();
   String ssid = "WaterTank-Setting-";
   ssid += String(ESP.getChipId()).c_str();
   WiFi.mode(WIFI_AP);
   WiFi.softAP(ssid, "12345678");
+#if HA_INIT
+#else
+  PUMP_DASH.attachCallback([&](bool value)
+                           { 
+                             if(value==true)
+                             PumpON_command();
+                             else
+                             PumpOFF_command(); });
+  MODE_DASH.attachCallback([&](bool value)
+                           { 
+                             if(value==true)
+                             {
+                               AutoMode=true;
+                             }
+                             else
+                             {
+                               AutoMode=false;
+                             } 
+                             MODE_DASH.update(AutoMode); 
+                             dashboard.sendUpdates(); });
+#endif
   setting_code();
 }
 
@@ -148,4 +176,9 @@ void loop()
     lcd.setCursor(14, 1);
     lcd.print(" ");
   }
+#if HA_INIT
+#else
+  LEVEL_DASH.update(value, "%");
+  dashboard.sendUpdates();
+#endif
 }
