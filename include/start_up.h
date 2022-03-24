@@ -11,22 +11,70 @@ void StartUp()
     debugln("MotorState: " + String(EEPROM.read(motorState_mem)));
     debugln("Mode: " + String(AutoMode));
     debug(F("Starting."));
+    pinMode(buzz, OUTPUT);
+#if OLED
+    display.clearDisplay();
+    delay(500);
+    display.setTextColor(WHITE);
+    display.setTextSize(1);
+    display.setCursor(4, 4);
+    display.println("SW:          HW:");
+    display.setCursor(22, 4);
+    display.print(_VERSION);
+    display.setCursor(101, 4);
+    display.print(_HARDWARE);
+    display.setCursor(80, 20);
+    display.print("SENSOR:");
+    display.setCursor(122, 20);
+    display.print(SENSOR_DISP);
+    display.setCursor(92, 32);
+    display.print("MODE:");
+    display.setCursor(122, 32);
+    display.print(STATOR_TYPE);
+    display.drawRect(0, 0, 128, 16, 1);
+    display.drawBitmap(4, 16, mdtronix_icon, 63, 48, 1);
+    display.setCursor(79, 55);
+    display.print("MDtronix");
+    display.display();
+    delay(3000);
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setFont(NULL);
+    display.setCursor(4, 16);
+    display.println("MIN:");
+    display.setCursor(29, 16);
+    display.print(MinDistance);
+    display.setCursor(4, 30);
+    display.print("MAX:");
+    display.setCursor(29, 30);
+    display.print(MaxDistance);
+    display.setCursor(4, 44);
+    display.print("START AT: ");
+    display.setCursor(59, 44);
+    display.print(MotorStartThreshold);
+    display.display();
+    delay(1000);
+    display.clearDisplay();
+#else
     lcd.clear();
     lcd.setCursor(11, 0);
     lcd.print("v" + String(_VERSION));
     lcd.setCursor(0, 1);
     lcd.print(compile_date);
-    pinMode(buzz, OUTPUT);
     for (int l = 0; l < int(sizeof(brand) - 1); l++)
     {
         lcd.setCursor(l, 0);
         lcd.print(brand[l]);
+#if Buzzer
         tone(buzz, 4500, 150);
+#endif
         digitalWrite(led, !digitalRead(led));
         debug(F("."));
         delay(300);
     }
+#endif
     debugln();
+#if !OLED
     delay(500);
     char showVersion[14];
     char showData[16];
@@ -48,5 +96,6 @@ void StartUp()
     lcd.print(STATOR_TYPE);
     delay(2000);
     lcd.clear();
+#endif
     digitalWrite(led, LOW);
 }

@@ -2,10 +2,10 @@
 #define PB 0    // D3
 #define led 16  // D0
 #define buzz 2  // D4
-/*............pcf8574................*/
+/*............Relays ................*/
 #define Relay_ON 10
-#define Relay_ON_2 13 // D7
-#define Relay_OFF 15  // D8
+#define Relay_ON_2 15
+#define Relay_OFF 13
 /*...................................*/
 #if SENSOR_1
 #define EchoPin 12    // D6

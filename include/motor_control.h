@@ -34,12 +34,10 @@ void motor_on()
         //     digitalWrite(Relay_ON, LOW);
         //     break;
     };
+#if Buzzer
     tone(buzz, 4500, 300);
-#if HA_INIT
-#else
-    PUMP_DASH.update(MotorState);
-    dashboard.sendUpdates();
 #endif
+
 }
 
 void motor_off()
@@ -60,12 +58,10 @@ void motor_off()
         //     digitalWrite(Relay_OFF, LOW);
         //     break;
     }
-#if HA_INIT
-#else
-    PUMP_DASH.update(MotorState);
-    dashboard.sendUpdates();
-#endif
+
+#if Buzzer
     tone(buzz, 4500, 500);
+#endif
     digitalWrite(led, LOW);
 }
 
