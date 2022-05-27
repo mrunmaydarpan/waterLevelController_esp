@@ -11,8 +11,8 @@
 #define EchoPin 12    // D6
 #define TriggerPin 14 // D5     need to swap
 #elif SENSOR_2
-#define sensorRX 14
-#define sensorTX 12
+#define sensorRX 12
+#define sensorTX 14
 #elif SENSOR_3
 #define TRIGGER_PIN 14
 #define PWM_OUTPUT_PIN 12

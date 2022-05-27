@@ -35,6 +35,7 @@ void Debug()
 
 void buttonEvent()
 {
+    /*-----------------------CONTROL BUTTON OPERATION---------------------*/
     if (button.wasPressed())
     {
         if (MotorState == true)
@@ -42,15 +43,11 @@ void buttonEvent()
             if (value >= MotorStartThreshold)
             {
                 ManualOff = false;
-                EEPROM.write(manualOff_mem, 0);
-                EEPROM.commit();
             }
             else
             {
                 ManualOff = true;
                 AutoMode = false;
-                EEPROM.write(manualOff_mem, 1);
-                EEPROM.commit();
             }
             PumpOFF_command();
         }
@@ -60,35 +57,54 @@ void buttonEvent()
         ManualOff = false;
         DryRunState = false;
         errorCountState = false;
-        EEPROM.write(manualOff_mem, 0);
-        EEPROM.commit();
         PumpON_command();
         if (AutoMode == false && modeButton.isPressed())
         {
             AutoMode = true;
+            EEPROM.commit();
         }
     }
-    if (modeButton.wasPressed() && ManualOff == false)
-    {
-        AutoMode = true;
-#if HA_INIT
-        mode_HA.setState(true);
-#else
-        MODE_DASH.update(AutoMode);
-        dashboard.sendUpdates();
-#endif
-    }
-    else if (modeButton.wasReleased())
-    {
-        AutoMode = false;
-#if HA_INIT
-        mode_HA.setState(false);
 
-#else
-        MODE_DASH.update(AutoMode);
-        dashboard.sendUpdates();
+    /*-----------------------MODE BUTTON OPERATION------------------------*/
+    if (modeButton.wasPressed())
+    {
+        if (AutoMode)
+        {
+            AutoMode = false;
+        }
+        else
+        {
+            AutoMode = true;
+        }
+
+#if HA_INIT
+        mode_HA.setState(AutoMode);
+// #else
+//         MODE_DASH.update(AutoMode);
+//         dashboard.sendUpdates();
 #endif
     }
+    //     if (modeButton.wasPressed() && ManualOff == false)
+    //     {
+    //         AutoMode = true;
+    // #if HA_INIT
+    //         mode_HA.setState(true);
+    // #else
+    //         MODE_DASH.update(AutoMode);
+    //         dashboard.sendUpdates();
+    // #endif
+    //     }
+    //     else if (modeButton.wasReleased())
+    //     {
+    //         AutoMode = false;
+    // #if HA_INIT
+    //         mode_HA.setState(false);
+
+    // #else
+    //         MODE_DASH.update(AutoMode);
+    //         dashboard.sendUpdates();
+    // #endif
+    //     }
 }
 
 void OneTimeRun()
@@ -98,7 +114,7 @@ void OneTimeRun()
         if (MotorState == true)
         {
             motor_on();
-#if DryRun
+#ifdef DryRun
             dryRun_LastDistance = Distance;
             EEPROM.write(dryRun_LastDistance_mem, dryRun_LastDistance);
             dryRun_timer = t.every(DryRunTime, DRY_RUN_CHECK);
@@ -107,21 +123,19 @@ void OneTimeRun()
         else
         {
             motor_off();
-#if DryRun
+#ifdef DryRun
             t.stop(dryRun_timer);
 #endif
         }
 #if HA_INIT
         pump_HA.setState(MotorState);
-#else
-        PUMP_DASH.update(MotorState);
-        dashboard.sendUpdates();
+// #else
+//         PUMP_DASH.update(MotorState);
+//         dashboard.sendUpdates();
 #endif
         debugln("MotorState Changed");
     }
     LastMotorState = MotorState;
-    EEPROM.write(LastMotorState_mem, LastMotorState);
-    EEPROM.commit();
 
     if (value != LastValue)
     {
@@ -140,8 +154,7 @@ void OneTimeRun()
             debugln("ERROR");
             ManualOff = true;
             AutoMode = false;
-            EEPROM.write(manualOff_mem, 1);
-            EEPROM.commit();
+
 #if OLED
 #else
             lcd.setCursor(3, 1);
@@ -154,7 +167,7 @@ void OneTimeRun()
                 lcd.print("ERROR");
             }
 #endif
-            EEPROM.write(1, 0);
+            EEPROM.write(motorState_mem, 0);
             ledBlink = t.oscillate(led, 500, HIGH);
         }
         else
@@ -174,7 +187,15 @@ void update_lcd()
     {
         display.drawBitmap(4, 16, alert_icon, 48, 48, 1);
         display.setCursor(55, 20);
-        display.print("SENSOR ERROR");
+
+        if (DryRunState)
+        {
+            display.print("DRY RUN");
+        }
+        else
+        {
+            display.print("SENSOR ERROR");
+        }
     }
     else
     {
@@ -233,8 +254,6 @@ void pump_action(bool state, HASwitch *s)
         ManualOff = false;
         DryRunState = false;
         errorCountState = false;
-        EEPROM.write(manualOff_mem, 0);
-        EEPROM.commit();
         PumpON_command();
         if (AutoMode == false && modeButton.isPressed())
         {
@@ -246,15 +265,11 @@ void pump_action(bool state, HASwitch *s)
         if (value >= MotorStartThreshold)
         {
             ManualOff = false;
-            EEPROM.write(manualOff_mem, 0);
-            EEPROM.commit();
         }
         else
         {
             ManualOff = true;
             AutoMode = false;
-            EEPROM.write(manualOff_mem, 1);
-            EEPROM.commit();
         }
         PumpOFF_command();
     }

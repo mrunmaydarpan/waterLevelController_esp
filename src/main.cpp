@@ -1,4 +1,3 @@
-#define SW_TEST false
 
 #include <setting.h>
 #include <includes.h>
@@ -20,13 +19,14 @@ uint8_t STATOR_TYPE;
 uint8_t errorCount;
 uint8_t ledBlink;
 int Distance, DistanceX;
-#if DryRun
+#ifdef DryRun
 int dryRun_timer;
 #endif
 uint8_t dryRun_Distance(0),
     dryRun_LastDistance(0);
-
+#ifdef web_setting
 extern const char index_html[];
+#endif
 const byte DNS_PORT = 53;
 
 const unsigned long LONG_PRESS(2000);
@@ -97,10 +97,10 @@ HASensor value_HA("Level");
 HASensor distance_HA("Distance");
 HASensor sensor_error_HA("System");
 
-#else
-Card LEVEL_DASH(&dashboard, HUMIDITY_CARD, "Level", "%", 0, 100);
-Card MODE_DASH(&dashboard, BUTTON_CARD, "Mode");
-Card PUMP_DASH(&dashboard, BUTTON_CARD, "Pump");
+// #else
+// Card LEVEL_DASH(&dashboard, HUMIDITY_CARD, "Level", "%", 0, 100);
+// Card MODE_DASH(&dashboard, BUTTON_CARD, "Mode");
+// Card PUMP_DASH(&dashboard, BUTTON_CARD, "Pump");
 #endif
 
 #include <headers.h>
@@ -139,7 +139,7 @@ void setup()
   pinMode(Relay_ON, OUTPUT);
   pinMode(Relay_ON_2, OUTPUT);
   pinMode(Relay_OFF, OUTPUT);
-  if (ManualOff == false && digitalRead(_Mode) == LOW)
+  if (ManualOff == false && AutoMode == true)
   {
     AutoMode = true;
   }
@@ -170,51 +170,55 @@ void setup()
 #if HA_INIT
   set_device();
   mqtt_HA.begin(BROKER_ADDR, BROKER_USER, BROKER_PASS);
-#else
-  PUMP_DASH.attachCallback([&](bool value)
-                           {
-                             if (value == true)
-                             {
-                                ManualOff = false;
-                                DryRunState = false;
-                                errorCountState = false;
-                                EEPROM.write(manualOff_mem, 0);
-                                EEPROM.commit();
-                                PumpON_command();
-                                if (AutoMode == false && modeButton.isPressed())
-                                {
-                                    AutoMode = true;
-                                }
-                             }
-                             else
-                             {
-                               if (value >= MotorStartThreshold)
-                               {
-                                 ManualOff = false;
-                                 EEPROM.write(manualOff_mem, 0);
-                                 EEPROM.commit();
-                               }
-                               else
-                               {
-                                 ManualOff = true;
-                                 AutoMode = false;
-                                 EEPROM.write(manualOff_mem, 1);
-                                 EEPROM.commit();
-                               }
-                             PumpOFF_command();
-                             } });
-  MODE_DASH.attachCallback([&](bool value)
-                           { 
-                             if(value==true)
-                             {
-                               AutoMode=true;
-                             }
-                             else
-                             {
-                               AutoMode=false;
-                             } 
-                             MODE_DASH.update(AutoMode); 
-                             dashboard.sendUpdates(); });
+// #else
+// PUMP_DASH.attachCallback([&](bool value)
+//                          {
+//                            if (value == true)
+//                            {
+//                               ManualOff = false;
+//                               DryRunState = false;
+//                               errorCountState = false;
+//                               EEPROM.write(manualOff_mem, 0);
+//                               EEPROM.commit();
+//                               PumpON_command();
+//                               if (AutoMode == false && modeButton.isPressed())
+//                               {
+//                                   AutoMode = true;
+//                                   EEPROM.write(AutoMode_mem,AutoMode);
+//                                   EEPROM.commit();
+//                               }
+//                            }
+//                            else
+//                            {
+//                              if (value >= MotorStartThreshold)
+//                              {
+//                                ManualOff = false;
+//                                EEPROM.write(manualOff_mem, 0);
+//                                EEPROM.commit();
+//                              }
+//                              else
+//                              {
+//                                ManualOff = true;
+//                                AutoMode = false;
+//                                EEPROM.write(manualOff_mem, 1);
+//                                EEPROM.commit();
+//                              }
+//                            PumpOFF_command();
+//                            } });
+// MODE_DASH.attachCallback([&](bool value)
+//                          {
+//                            if(value==true)
+//                            {
+//                              AutoMode=true;
+//                            }
+//                            else
+//                            {
+//                              AutoMode=false;
+//                            }
+//                            EEPROM.write(AutoMode_mem,AutoMode);
+//                            EEPROM.commit();
+//                            MODE_DASH.update(AutoMode);
+//                            dashboard.sendUpdates(); });
 #endif
   setting_code();
 }
@@ -263,13 +267,26 @@ void loop()
     lcd.print(" ");
 #endif
   }
-#else
-  MODE_DASH.update(AutoMode);
-  LEVEL_DASH.update(value, "%");
-  dashboard.sendUpdates();
+// #else
+//   MODE_DASH.update(AutoMode);
+//   if (!errorCountState)
+//     LEVEL_DASH.update(value, "%");
+//   else
+//     LEVEL_DASH.update("Error");
+//   dashboard.sendUpdates();
 #endif
 #if WM_SET
   wm.process();
 #endif
   MDNS.update();
+  EEPROM.write(manualOff_mem, ManualOff);
+  EEPROM.write(AutoMode_mem, AutoMode);
+  EEPROM.write(dryRun_LastDistance_mem, dryRun_LastDistance);
+  EEPROM.write(LastMotorState_mem, LastMotorState);
+  EEPROM.write(motorState_mem, MotorState);
+  EEPROM.write(minDistance_mem, MinDistance);
+  EEPROM.write(maxDistance_mem, MaxDistance);
+  EEPROM.write(MotorStartThreshold_mem, MotorStartThreshold);
+  EEPROM.write(StatorType_mem, STATOR_TYPE);
+  EEPROM.commit();
 }

@@ -1,4 +1,4 @@
-#if DryRun
+#ifdef DryRun
 #define DryRunTime 120000
 #endif
 
@@ -14,10 +14,11 @@
 #include <ESPAsyncWebServer.h>
 #include <ESPAsyncTCP.h>
 #include <AsyncElegantOTA.h>
+#include <ArduinoJson.h>
 #if HA_INIT
 #include <ArduinoHA.h>
 #else
-#include <ESPDash.h>
+// #include <ESPDash.h>
 #endif
 #include <ESP8266mDNS.h>
 #include <JC_Button.h>
@@ -62,8 +63,8 @@ Smoothed<uint8_t> mySensor;
 AsyncWebServer server(80);
 #if HA_INIT
 byte mac[WL_MAC_ADDR_LENGTH];
-#else
-ESPDash dashboard(&server);
+// #else
+// ESPDash dashboard(&server);
 #endif
 // DNSServer dns;
 WiFiClient client;

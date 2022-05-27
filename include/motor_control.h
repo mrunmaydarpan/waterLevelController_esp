@@ -3,14 +3,12 @@ void PumpON_command()
     if (value <= 100)
     {
         MotorState = true;
-        EEPROM.write(motorState_mem, 1);
     }
 }
 
 void PumpOFF_command()
 {
     MotorState = false;
-    EEPROM.write(motorState_mem, 0);
 }
 
 void motor_on()
@@ -65,7 +63,7 @@ void motor_off()
     digitalWrite(led, LOW);
 }
 
-#if DryRun
+#ifdef DryRun
 void DRY_RUN_CHECK()
 {
     if (dryRun_LastDistance <= Distance)
@@ -78,7 +76,6 @@ void DRY_RUN_CHECK()
     {
         debugln("all ok");
         dryRun_LastDistance = Distance;
-        EEPROM.write(dryRun_LastDistance_mem, dryRun_LastDistance);
     }
 }
 #endif

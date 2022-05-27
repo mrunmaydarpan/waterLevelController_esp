@@ -1,33 +1,30 @@
-#define _VERSION "7.6"
+#define _VERSION "2.1"
 #define _HARDWARE "9.0"
 
 const char brand[] = "MDtronix";
 
 /*------------sensor setting-----------------*/
 // #define SENSOR_1 true // sonar
-// #define SENSOR_2 true // UART
-#define SENSOR_3 true // PWM
+#define SENSOR_2 true // UART
+// #define SENSOR_3 true // PWM
 /*------------wifi setting-------------------*/
-#define AP_MODE false // AP Mode
+#define AP_MODE true // AP Mode
+#define WM_SET true  // wifimanager
 
-#if !AP_MODE
-#define WM_SET true // wifimanager
-// #define ESP_CON true // espconnect
-#endif
 /*------------API setting--------------------*/
-#if !AP_MODE
 #define HA_INIT false
-#endif
 #if HA_INIT
 #define BROKER_ADDR IPAddress(192, 168, 1, 7)
 #endif
 /*-------------------------------------------*/
 
+#define SW_TEST false
 #define OLED true
-#define DryRun false
-#define debugData true
-#define Buzzer false
+#define DryRun
+#define debugData false
+#define Buzzer true
 #define relayPin_inverted true
+// #define web_setting
 
 #define on_delay 500
 #define off_delay 1000

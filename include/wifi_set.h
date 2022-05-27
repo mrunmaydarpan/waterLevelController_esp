@@ -3,6 +3,7 @@ const char *max_ = "max";
 const char *thres_ = "threshold";
 const char *stator_ = "stator";
 
+#ifdef web_setting
 String processor(const String &var)
 {
     if (var == "setmin")
@@ -31,6 +32,8 @@ String processor(const String &var)
     }
     return String();
 }
+#endif
+
 void WIFI_CONNECT()
 {
 #if WM_SET || ESP_CON
@@ -52,7 +55,7 @@ void WIFI_CONNECT()
 #endif
 #endif
 #if WM_SET
-    WiFi.mode(WIFI_STA);
+    WiFi.mode(WIFI_AP_STA);
     // wm.resetSettings(); // wipe settings
     wm.setConfigPortalBlocking(false);
     if (wm.autoConnect("MDtronix-WTLC-setup"))
@@ -119,19 +122,40 @@ void setting_code()
     WiFi.softAP("MDtronix-WTLC");
 #endif
     server.onNotFound([](AsyncWebServerRequest *request)
-                      { request->send_P(200, "text/html", index_html, processor); });
+                      { 
+                          StaticJsonDocument<200> doc;
+                          doc["level"] = value;
+                          doc["pump"] = MotorState;
+                          doc["mode"] = AutoMode;
+                          String reply;
+                          serializeJsonPretty(doc, reply);
+                          request->send(200, "text/json", reply); });
+
+#ifdef web_setting
     server.on("/setting", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                   debugln("setting pages");
                   request->send_P(200, "text/html", index_html, processor); });
+#endif
+    server.on("/get_setting", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                  StaticJsonDocument<200> doc;
+                  doc["min"] = MinDistance;
+                  doc["max"] = MaxDistance;
+                  doc["threshold"] = MotorStartThreshold;
+                  doc["starter"] = STATOR_TYPE;
+                  String reply;
+                  serializeJsonPretty(doc,reply);
+                  request->send(200,"text/json",reply); });
+
     server.on("/set", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                   int min;
                   int max;
                   int threshold;
                   int stator;
-                  String message;
-                  if (request->hasParam(min_) && request->hasParam(max_) && request->hasParam(thres_) && request->hasParam(stator_))
+                  String reply;
+                if (request->hasParam(min_) && request->hasParam(max_) && request->hasParam(thres_) && request->hasParam(stator_))
                   {
                       min = request->getParam(min_)->value().toInt();
                       max = request->getParam(max_)->value().toInt();
@@ -139,35 +163,40 @@ void setting_code()
                       stator = request->getParam(stator_)->value().toInt();
                       if (min == 0 || max == 0 || threshold == 0)
                       {
-                          message = "invalid values (\"0\") are not allowed";
+                          reply = "error";
+                          request->send(201, "text/plain", reply);
                       }
                       else if (min < max && threshold <= 70 && threshold >= 20 && stator < 4 && stator != 0)
                       {
-                          message = "min: ";
-                          message += String(min) + '\n';
-                          message += "max: ";
-                          message += String(max) + '\n';
-                          message += "start at: ";
-                          message += String(threshold) + '\n';
-                          message += "stator: ";
-                          message += String(stator);
-                          EEPROM.write(minDistance_mem, min);
-                          EEPROM.write(maxDistance_mem, max);
-                          EEPROM.write(MotorStartThreshold_mem, threshold);
-                          EEPROM.write(StatorType_mem, stator);
-                          EEPROM.commit();
-                          MinDistance = EEPROM.read(minDistance_mem);
-                          MaxDistance = EEPROM.read(maxDistance_mem);
-                          MotorStartThreshold = EEPROM.read(MotorStartThreshold_mem);
-                          STATOR_TYPE = EEPROM.read(StatorType_mem);
+                          StaticJsonDocument<200> doc;
+                          doc["min"] = min;
+                          doc["max"] = max;
+                          doc["threshold"] = threshold;
+                          doc["starter"] = stator;
+                          serializeJsonPretty(doc,reply);
+                          MinDistance = min;
+                          MaxDistance = max;
+                          MotorStartThreshold = threshold;
+                          STATOR_TYPE = stator;
                           debugln("min: " + min ? min : MinDistance);
-                      }
+                          request->send(200, "text/plain", reply);
+                       }
+                  }
+                  else if(request->hasParam("pump"))
+                  {
+                      MotorState = request->getParam("pump")->value().toInt();
+                      request->send(203,"text/plain","ok");
+                  } 
+                  else if(request->hasParam("mode"))
+                  {
+                      AutoMode = request->getParam("mode")->value().toInt();
+                      request->send(204,"text/plain","ok");
                   }
                   else
                   {
-                      message = "No message sent";
-                  }
-                  request->send(200, "text/plain", message); });
+                      reply = "No message sent";
+                      request->send(202, "text/plain", reply);
+                  } });
 
     // dns.start(DNS_PORT, "*", IPAddress(WiFi.localIP()));
     if (!MDNS.begin("mdtronix-wtlc"))

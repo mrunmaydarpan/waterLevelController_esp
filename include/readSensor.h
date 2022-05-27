@@ -40,7 +40,7 @@ void readSensor()
 //          errorCountState = false;
 //          okCount = 0;
 //       }
-// #if DryRun
+// #ifdef DryRun
 //       if (DryRunState == false)
 //          errorCountState = false;
 // #endif
@@ -68,14 +68,14 @@ void readSensor()
             DistanceX = mySensor.get();
             if (Distance <= MaxDistance && Distance >= MinDistance)
             {
-               uint8_t value = map(DistanceX, MinDistance, MaxDistance, 100, 0);
+               value = map(DistanceX, MinDistance, MaxDistance, 100, 0);
                // value = valueX;
             }
             else if (DistanceX >= MaxDistance)
             {
                value = 0;
             }
-            else if (Distance <= MinDistance)
+            else if (DistanceX <= MinDistance)
             {
                value = 100;
             }
@@ -140,7 +140,7 @@ void readSensor()
       value = 40;
 #else
       errorCount++;
-      if (errorCount > 30)
+      if (errorCount > 15)
       {
          errorCountState = true;
          errorCount = 1;

@@ -9,7 +9,7 @@ void StartUp()
     debugln("start at: " + String(MotorStartThreshold));
     debugln("ManualOff: " + String(EEPROM.read(manualOff_mem)));
     debugln("MotorState: " + String(EEPROM.read(motorState_mem)));
-    debugln("Mode: " + String(AutoMode));
+    debugln("Mode: " + String(EEPROM.read(AutoMode_mem)));
     debug(F("Starting."));
     pinMode(buzz, OUTPUT);
 #if OLED
